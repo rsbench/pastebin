@@ -1,6 +1,8 @@
 use serde::Deserialize;
 use worker::*;
 
+const HTML: &str = include_str!("./index.html");
+
 #[event(fetch)]
 pub async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
     let router = Router::new();
@@ -47,7 +49,7 @@ pub async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
                 }
             }
         })
-        .get_async("/:id", |_req, ctx| {
+        .get_async("/:id/raw", |_req, ctx| {
             let env = env.clone();
             async move {
                 {
@@ -71,6 +73,32 @@ pub async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
 
                     Response::ok(db_result)
                 }
+            }
+        })
+        .get_async("/:id", |_req, ctx| {
+            let env = env.clone();
+            async move {
+                let id = if let Some(id) = ctx.param("id") {
+                id
+            } else {
+                return Response::error("ID not found", 500);
+            };
+                let id = if let Ok(id) = id.parse::<u32>() {
+                    id
+                } else {
+                    return Response::error("ID not found", 500);
+                };
+
+                let db_result = if let Ok(db_result) = read_db(&env.d1("rsbench").unwrap(), id).await {
+                    db_result
+                } else {
+                    return Response::error("DB not found", 500);
+                };
+
+                let html_replaced = &*HTML.replace("RSBENCH_TEST_RESULT", &db_result);
+                let html_replaced = html_replaced.replace("RAW_URL_HERE", format!("/{}/raw", id).as_str());
+
+                Response::from_html(html_replaced)
             }
         })
         .run(req, env.clone())
