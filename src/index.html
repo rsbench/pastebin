@@ -1,137 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSBench - WE LOVE OPEN-SOURCE</title>
     <style>
-        body,
-        html {
-            background-color: #d3d3d3;
-            font-family: Consolas, Monaco, "Andale Mono", monospace;
-            color: #d4d4d4;
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-        .container {
-            flex: 1;
+        body {
             background-color: #2d2d2d;
-            border-radius: 5px;
-            overflow: hidden;
-            padding: 20px;
-            box-sizing: border-box;
+            color: #ccc;
+            font-family: monospace;
         }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background-color: #3c3c3c;
+        .code-block {
+            position: relative;
+            background-color: #333;
+            padding: 1em;
+            margin: 1em 0;
+            overflow-x: auto;
+            border-radius: 4px;
         }
-        .header a,
-        .header span {
-            color: #61afef;
-            text-decoration: none;
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-        }
-        .icon {
-            width: 1em;
-            height: 1em;
-            vertical-align: middle;
-            fill: currentColor; /* Use the text color as the icon color */
-        }
-        .content {
-            display: flex;
-            height: 100%;
-        }
-        .line-numbers {
-            background-color: #252525;
-            color: #8b949e;
-            text-align: right;
-            padding-right: 10px;
-            user-select: none;
-            min-height: 100%;
-            box-sizing: border-box;
-            line-height: 1.5; /* Match line height with code */
-            padding-top: 11px; /* Adjust padding to align with code */
-        }
-        .code {
-            padding: 10px;
+        .code-block pre {
+            margin: 0;
             white-space: pre-wrap;
             word-wrap: break-word;
-            overflow-x: auto;
-            min-height: 100%;
-            box-sizing: border-box;
-            line-height: 1.5; /* Match line height with line numbers */
         }
-        .copy-btn {
+        .buttons {
+            position: absolute;
+            top: 0.5em;
+            right: 0.5em;
+        }
+        .buttons button {
+            background-color: #444;
+            color: #ccc;
+            border: none;
+            padding: 0.5em;
+            margin-left: 0.5em;
+            border-radius: 4px;
             cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .buttons button:hover {
+            background-color: #555;
         }
     </style>
-    <title>RSBench - WE LOVE OPEN-SOURCE!</title>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <a href="RAW_URL_HERE" target="_blank">
-            <svg width="14px" height="14px" viewBox="0 0 32 32" id="icon" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <style>
-                        .cls-1 {
-                            fill: none;
-                        }
-                    </style>
-                </defs>
-                <title>RAW</title>
-                <polygon points="29.2 9 28.86 17 28.6 21.54 28.19 18 27.51 12.54 25.49 12.54 24.81 18 24.4 21.54 24.14 17 23.8 9 22 9 23 23 25.27 23 26.03 18.07 26.49 14 26.5 13.97 26.51 14 26.97 18.07 27.73 23 30 23 31 9 29.2 9" />
-                <path d="M18,9H14a2,2,0,0,0-2,2V23h2V18h4v5h2V11A2,2,0,0,0,18,9Zm-4,7V11h4v5Z" />
-                <path d="M10,15V11A2,2,0,0,0,8,9H2V23H4V17H5.48l2.34,6H10L7.63,17H8A2,2,0,0,0,10,15ZM4,11H8v4H4Z" />
-                <rect id="_Transparent_Rectangle_" data-name="&lt;Transparent Rectangle&gt;" class="cls-1" width="32" height="32" />
-            </svg>
-        </a>
-        <span class="copy-btn" onclick="copyText()">
-            <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path
-                        d="M16 4H8C6.89543 4 6 4.89543 6 6V18C6 19.1046 6.89543 20 8 20H16C17.1046 20 18 19.1046 18 18V6C18 4.89543 17.1046 4 16 4ZM10 6V4C10 3.44772 10.4477 3 11 3H16C16.5523 3 17 3.44772 17 4V6H10ZM10 8V18C10 18.5523 9.55228 19 9 19H4C3.44772 19 3 18.5523 3 18V8C3 7.44772 3.44772 7 4 7H9C9.55228 7 10 7.44772 10 8Z"
-                />
-            </svg>
-        </span>
+
+<div class="code-block">
+    <div class="buttons">
+        <button id="copyButton">复制</button>
+        <a href="RAW_URL_HERE" target="_blank"><button>RAW</button></a>
     </div>
-    <div class="content">
-        <pre class="line-numbers"></pre>
-        <pre class="code" id="codeContent"></pre>
-    </div>
+    <pre id="codeContent">RSBENCH_TEST_RESULT</pre>
 </div>
+
 <script>
-    function addLineNumbers(code) {
-        const lines = code.split("\n");
-        let lineNumbers = "";
-        for (let i = 1; i <= lines.length; i++) {
-            lineNumbers += i + "\n";
-        }
-        document.querySelector(".line-numbers").textContent = lineNumbers.trim();
-    }
-
-    function copyText() {
-        const codeElement = document.getElementById("codeContent");
-        navigator.clipboard
-            .writeText(codeElement.textContent)
-            .then(() => {
-                alert("Copied to clipboard!");
-            })
-            .catch((err) => {
-                console.error("Failed to copy text: ", err);
-            });
-    }
-
-    const responseText = `RSBENCH_TEST_RESULT`;
-
-    document.getElementById("codeContent").textContent = responseText;
-    addLineNumbers(responseText);
+    document.getElementById('copyButton').addEventListener('click', function() {
+        var textToCopy = document.getElementById('codeContent').innerText;
+        navigator.clipboard.writeText(textToCopy).then(function() {
+            alert('文本已复制到剪贴板');
+        }, function(err) {
+            console.error('无法复制文本: ', err);
+        });
+    });
 </script>
+
 </body>
 </html>
