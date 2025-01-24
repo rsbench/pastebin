@@ -8,4 +8,4 @@ command = "cargo install -q worker-build && worker-build --release"
 [[d1_databases]]
 binding = "rsbench"
 database_name = "rsbench"
-database_id = "00b34222-9056-4b96-b1f8-5de1f309f288"
+database_id = "4bee5df6-439c-4e14-ba92-fefb12a01818"
