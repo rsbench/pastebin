@@ -1,3 +1,4 @@
+use rand::random;
 use serde::Deserialize;
 use worker::*;
 
@@ -59,13 +60,7 @@ pub async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
                         return Response::error("ID not found", 500);
                     };
 
-                    let id = if let Ok(id) = id.parse::<u32>() {
-                        id
-                    } else {
-                        return Response::error("ID not found", 500);
-                    };
-
-                    let db_result = if let Ok(db_result) = read_db(&env.d1("rsbench").unwrap(), id).await {
+                    let db_result = if let Ok(db_result) = read_db(&env.d1("rsbench").unwrap(), String::from(id)).await {
                         db_result
                     } else {
                         return Response::error("DB not found", 500);
@@ -83,13 +78,7 @@ pub async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
             } else {
                 return Response::error("ID not found", 500);
             };
-                let id = if let Ok(id) = id.parse::<u32>() {
-                    id
-                } else {
-                    return Response::error("ID not found", 500);
-                };
-
-                let db_result = if let Ok(db_result) = read_db(&env.d1("rsbench").unwrap(), id).await {
+                let db_result = if let Ok(db_result) = read_db(&env.d1("rsbench").unwrap(), id.to_string()).await {
                     db_result
                 } else {
                     return Response::error("DB not found", 500);
@@ -105,34 +94,28 @@ pub async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
         .await
 }
 
-async fn write_db(database: &D1Database, _string: String) -> Result<u32> {
+async fn write_db(database: &D1Database, _string: String) -> Result<String> {
+    use uuid::Uuid;
+    let data: [u8; 16] = random();
+    let random_uuid = Uuid::new_v8(data).to_string();
+
     let command = format!(
-        "INSERT INTO main (content) VALUES ('{}') RETURNING id;",
+        "INSERT INTO main (id, content) VALUES ('{}', '{}');",
+        random_uuid,
         _string
     );
     let command_d1 = database.prepare(&command);
     let res = command_d1.run().await?;
 
-    #[derive(Deserialize)]
-    struct ID {
-        id: u32,
-    }
-
-    match res.results::<ID>() {
-        Ok(res) => {
-            let res = if let Some(first) = res.first() {
-                first.id
-            } else {
-                return Err(Error::from("Can not get id"));
-            };
-            Ok(res)
-        }
-        Err(e) => Err(e),
+    return if res.success() {
+        Ok(random_uuid)
+    } else {
+        Err(Error::from("Can not insert data"))
     }
 }
 
-async fn read_db(database: &D1Database, id: u32) -> Result<String> {
-    let command = format!("SELECT content FROM main WHERE id = {};", id);
+async fn read_db(database: &D1Database, id: String) -> Result<String> {
+    let command = format!("SELECT content FROM main WHERE id = '{}';", id);
     let command_d1 = database.prepare(&command);
     let res = command_d1.run().await?;
 
